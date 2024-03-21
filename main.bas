@@ -18,49 +18,68 @@
 180 DIM d(4, 10)
 190 REM player UIs: 1:ship,2:planet,3:planet-x,4:planet-y;5:shield-x;6:shield-y
 200 DIM u(4, 6)
-210 REM load attack vectors
-220 RESTORE 8220
-230 FOR x = 1 TO 30 STEP 1
-240 FOR y = 1 TO 3 STEP 1
-250 READ a(x, y)
-260 NEXT y
-270 NEXT x
-280 REM load movement vectors
-290 RESTORE 8530
-300 FOR x = 1 TO 15 STEP 1
-310 FOR y = 1 TO 3 STEP 1
-320 READ m(x, y)
-330 NEXT y
-340 NEXT x
-350 REM load player UIs and name
-360 RESTORE 8690
-370 FOR x = 1 TO 4 STEP 1
-380 FOR y = 1 TO 6 STEP 1
-390 READ u(x, y)
-400 NEXT y
-410 NEXT x
-420 RESTORE 8740
-430 FOR x = 1 TO 4 STEP 1
-440 READ n$(x)
+210 REM movement ai behaviours
+220 DIM v(6, 5)
+230 REM attack ai behaviours
+240 DIM b(6, 5)
+250 REM load attack vectors
+260 RESTORE 9010
+270 FOR x = 1 TO 30 STEP 1
+280 FOR y = 1 TO 3 STEP 1
+290 READ a(x, y)
+300 NEXT y
+310 NEXT x
+320 REM load movement vectors
+330 RESTORE 9120
+340 FOR x = 1 TO 15 STEP 1
+350 FOR y = 1 TO 3 STEP 1
+360 READ m(x, y)
+370 NEXT y
+380 NEXT x
+390 REM load player UIs and name
+400 RESTORE 9180
+410 FOR x = 1 TO 4 STEP 1
+420 FOR y = 1 TO 6 STEP 1
+430 READ u(x, y)
+440 NEXT y
 450 NEXT x
-460 REM load UDGs
-470 LET i = USR "a"
-480 LET t = i+8*19-1
-490 RESTORE 8810
-500 FOR x = i TO t STEP 1
-510 READ y
-520 POKE x, y
-530 NEXT x
-540 LET k$ = ""
+460 RESTORE 9230
+470 FOR x = 1 TO 4 STEP 1
+480 READ n$(x)
+490 NEXT x
+500 REM load movement ai behaviours
+510 RESTORE 9500
+520 FOR x = 1 TO 6 STEP 1
+530 FOR y = 1 TO 5 STEP 1
+540 READ v(x, y)
+550 NEXT y
+560 NEXT x
+570 REM load attack ai behaviours
+580 RESTORE 9570
+590 FOR x = 1 TO 6 STEP 1
+600 FOR y = 1 TO 5 STEP 1
+610 READ b(x, y)
+620 NEXT y
+630 NEXT x
+640 REM load UDGs
+650 LET i = USR "a"
+660 LET t = i+8*19-1
+670 RESTORE 9300
+680 FOR x = i TO t STEP 1
+690 READ y
+700 POKE x, y
+710 NEXT x
+720 LET k$ = ""
 1000 CLS
 1010 GO SUB 3000
-1030 GO SUB 4000
-1040 IF k$ <> "Y" THEN GO TO 1000
-1050 REM main game loop
-1060 FOR p = 1 TO t STEP 1
-1070 IF d(p, 1) = 0 THEN GO TO 1140
-1080 LET k$ = ""
-1090 REM main move input loop
+1020 GO SUB 4000
+1030 IF k$ <> "Y" THEN GO TO 1000
+1040 REM main game loop
+1050 FOR p = 1 TO t STEP 1
+1060 REM movement phase
+1070 IF d(p, 1) = 0 THEN GO TO 1140 : REM dead
+1080 IF p > (t - u) THEN GO SUB 8000 : GO TO 1140 : REM AI
+1090 LET k$ = ""
 1100 GO SUB 5200
 1110 GO SUB 4200
 1120 GO SUB 4000
@@ -73,32 +92,31 @@
 1190 GO SUB 6000 : PRINT AT tx, ty; "  "; AT tx + 1, ty; "  " : GO SUB 5600
 1200 NEXT p
 1210 GO SUB 6200
-1220 REM combat phase
-1230 FOR p = 1 TO t STEP 1
-1240 REM check ship on map
-1250 IF d(p, 1) < 1 THEN GO TO 1320
+1220 FOR p = 1 TO t STEP 1
+1230 REM combat phase
+1240 IF d(p, 1) < 1 THEN GO TO 1310 : REM dead
+1250 IF p > (t - u) THEN GO SUB 8500 : GO TO 1310 : REM AI
 1260 LET k$ = ""
-1270 REM main attack input loop
-1280 GO SUB 5200
-1290 GO SUB 4500
-1300 GO SUB 4000
-1310 IF k$ <> "Y" THEN GO TO 1270
-1320 REM next attack input     
-1330 NEXT p
-1340 REM apply combat
-1350 FOR p = 1 TO t STEP 1
-1360 REM if ship on map
-1370 IF d(p, 1) > 0 THEN GO SUB 5200 : GO SUB 6500
-1380 NEXT p    
-1390 REM move killed ships off map
-1400 FOR p = 1 TO t STEP 1
-1410 REM if ship on map and 0 hull move off map
-1420 IF d(p, 1) > 0 AND d(p, 8) < 1 THEN LET d(p, 1) = 0
-1430 NEXT p
-1440 GO SUB 6200
-1450 GO SUB 7500
-1460 IF t > 0 THEN GO TO 1050
-1470 GO TO 1000
+1270 GO SUB 5200
+1280 GO SUB 4500
+1290 GO SUB 4000
+1300 IF k$ <> "Y" THEN GO TO 1270
+1310 REM next attack input     
+1320 NEXT p
+1330 REM apply combat
+1340 FOR p = 1 TO t STEP 1
+1350 REM if ship on map
+1360 IF d(p, 1) > 0 THEN GO SUB 5200 : GO SUB 6500
+1370 NEXT p    
+1380 REM move killed ships off map
+1390 FOR p = 1 TO t STEP 1
+1400 REM if ship on map and 0 hull move off map
+1410 IF d(p, 1) > 0 AND d(p, 8) < 1 THEN LET d(p, 1) = 0
+1420 NEXT p
+1430 GO SUB 6200
+1440 GO SUB 7500
+1450 IF t > 0 THEN GO TO 1050
+1460 GO TO 1000
 3000 REM initialise game
 3010 LET p = 1
 3020 LET t = 0
@@ -111,42 +129,47 @@
 3090 IF CODE(k$) < 50 OR CODE(k$) > 52 THEN GO TO 3070
 3100 PRINT AT 19, 30; k$;
 3110 LET t = VAL(k$)
-3115 PRINT AT 20, 11; "Loading map...";
-3120 REM load player data
-3130 RESTORE 8760
-3140 FOR x = 1 TO t STEP 1
-3150 FOR y = 1 TO 10 STEP 1
-3160 READ d(x, y)
-3170 NEXT y
-3180 NEXT x
-3190 REM clear map
-3200 FOR y = 1 TO 12 STEP 1
-3210 FOR x = 1 TO 8
-3220 LET l(x, y) = 0
-3230 NEXT x
-3240 NEXT y     
-3250 REM generate planet locations
-3260 RANDOMIZE 0
-3270 REM always 4 planets 
-3280 FOR p = 1 TO 4  
-3290 REM randomise planet locations
-3300 LET x = INT (RND * 4) + u(p, 3)
-3310 LET y = INT (RND * 4) + u(p, 4)
-3320 REM avoid edges
-3330 IF x < 2 OR x > 7 OR y < 2 OR y > 11 THEN GO TO 3290
-3340 REM update map and draw planet
-3350 LET l(x, y) = u(p, 2)
-3360 LET tx = (x - 1) * 2
-3370 LET ty = ((y - 1) * 2) + 8
-3380 PRINT AT tx, ty; INK l(x, y); PAPER 0; CHR$(144); CHR$(145); AT tx + 1, ty; CHR$(146); CHR$(147);
-3390 NEXT p
-3400 REM draw players
-3410 FOR p = 1 TO t STEP 1
-3420 GO SUB 5500
-3430 GO SUB 5600
-3440 NEXT p
-3450 PRINT AT 20, 11; "              ";
-3460 RETURN
+3120 PRINT AT 20, 11; "AI players 0-"; t-1; "? "; FLASH 1; CHR$(143);
+3130 PAUSE 0
+3140 LET k$ = INKEY$
+3150 IF CODE(k$) < 48 OR CODE(k$) > 48+t-1 THEN GO TO 3130
+3160 PRINT AT 20, 27; k$;
+3170 LET u = VAL(k$)
+3180 PRINT AT 21, 11; "Loading map...";
+3190 REM load player data
+3200 RESTORE 9250
+3210 FOR x = 1 TO t STEP 1
+3220 FOR y = 1 TO 10 STEP 1
+3230 READ d(x, y)
+3240 NEXT y
+3250 NEXT x
+3260 REM clear map
+3270 FOR y = 1 TO 12 STEP 1
+3280 FOR x = 1 TO 8
+3290 LET l(x, y) = 0
+3300 NEXT x
+3310 NEXT y     
+3320 REM generate planet locations
+3330 RANDOMIZE 0
+3340 REM always 4 planets 
+3350 FOR p = 1 TO 4  
+3360 REM randomise planet locations
+3370 LET x = INT (RND * 4) + u(p, 3)
+3380 LET y = INT (RND * 4) + u(p, 4)
+3390 REM avoid edges
+3400 IF x < 2 OR x > 7 OR y < 2 OR y > 11 THEN GO TO 3360
+3410 REM update map and draw planet
+3420 LET l(x, y) = u(p, 2)
+3430 LET tx = (x - 1) * 2
+3440 LET ty = ((y - 1) * 2) + 8
+3450 PRINT AT tx, ty; INK l(x, y); PAPER 0; CHR$(144); CHR$(145); AT tx + 1, ty; CHR$(146); CHR$(147);
+3460 NEXT p
+3470 REM draw players
+3480 FOR p = 1 TO t STEP 1
+3490 GO SUB 5500
+3500 GO SUB 5600
+3510 NEXT p
+3520 RETURN
 4000 REM console confirm
 4010 PRINT #1; AT 1, 11; INK 6; "Confirm Y/N? "; FLASH 1; CHR$(143);
 4020 PAUSE 0
@@ -280,17 +303,18 @@
 6200 REM collision check
 6210 FOR p = 1 TO t STEP 1
 6220 IF d(p, 1) < 1 THEN GO TO 6300
-6230 FOR q = p TO t STEP 1
-6240 IF p = q OR d(q, 1) < 1 OR d(p, 1) <> d(q, 1) OR d(p, 2) <> d(q, 2) THEN GO TO 6290
-6250 REM collision!
-6260 LET tx = (d(p, 1) - 1) * 2
-6270 LET ty = ((d(p, 2) - 1) * 2) + 8
-6280 PRINT AT tx, ty; INK u(p, 1); PAPER u(q, 1); FLASH 1; CHR$(139); CHR$(135); AT tx + 1, ty; CHR$(142); CHR$(141);
-6290 NEXT q
-6300 NEXT p
-6310 RETURN
+6230 GO SUB 5600
+6240 FOR q = p TO t STEP 1
+6250 IF p = q OR d(q, 1) < 1 OR d(p, 1) <> d(q, 1) OR d(p, 2) <> d(q, 2) THEN GO TO 6300
+6260 REM collision!
+6270 LET tx = (d(p, 1) - 1) * 2
+6280 LET ty = ((d(p, 2) - 1) * 2) + 8
+6290 PRINT AT tx, ty; INK u(p, 1); PAPER u(q, 1); FLASH 1; CHR$(139); CHR$(135); AT tx + 1, ty; CHR$(142); CHR$(141);
+6300 NEXT q
+6310 NEXT p
+6320 RETURN
 6500 REM player attack
-6510 IF a(d(p, 10), 3) = 0 THEN RETURN
+6510 IF a(d(p, 10), 3) = 0 THEN LET s = 0 : GO TO 6960
 6520 IF d(p, 3) = 0 THEN LET x = d(p, 1) + a(d(p, 10), 1) : LET y = d(p, 2) + a(d(p, 10), 2) : GO TO 6560
 6530 IF d(p, 3) = 1 THEN LET x = d(p, 1) + a(d(p, 10), 2) : LET y = d(p, 2) - a(d(p, 10), 1) : GO TO 6560
 6540 IF d(p, 3) = 2 THEN LET x = d(p, 1) - a(d(p, 10), 1) : LET y = d(p, 2) - a(d(p, 10), 2) : GO TO 6560
@@ -355,52 +379,95 @@
 7650 PRINT AT 18, 11; INK u(p, 1); "SPACE "; n$(p); INK 4; " have won.";
 7660 GO SUB 4800
 7670 RETURN
-8210 REM attack vectors data
-8220 DATA -3, -2, 4, -3, -1, 4, -3, 0, 4
-8250 DATA -3, 1, 4, -3, 2, 4, -2, -2, 1
-8280 DATA -2, -1, 2, -2, 0, 2, -2, 1, 2
-8310 DATA -2, 2, 1, -1, -2, 1, -1, -1, 3
-8340 DATA -1, 0, 1, -1, 1, 3, -1, 2, 1
-8370 DATA 0, -2, 1, 0, -1, 3, 0, 0, 0
-8400 DATA 0, 1, 3, 0, 2, 1, 1, -2, 1
-8430 DATA 1, -1, 3, 1, 0, 0, 1, 1, 3
-8460 DATA 1, 2, 1, 2, -2, 1, 2, -1, 0
-8490 DATA 2, 0, 0, 2, 1, 0, 2, 2, 1
-8520 REM movement vectors data
-8530 DATA -2, -1, -1, -2, -1, 0, -2, 0, 0
-8560 DATA -2, 1, 0, -2, 1, 1, -1, -1, -1
-8590 DATA -1, -1, 0, -1, 0, 0, -1, 1, 0
-8620 DATA -1, 1, 1, 0, 0, 0, 0, 0, -1
-8650 DATA 0, 0, 0, 0, 0, 1, 0, 0, 0
-8680 REM player UIs data
-8690 DATA 1, 5, 1, 1, 0, 0
-8700 DATA 2, 4, 5, 9, 3, 3
-8710 DATA 3, 2, 1, 9, 0, 3
-8720 DATA 6, 3, 5, 1, 3, 0
-8730 REM player names data
-8740 DATA "FLEET", "ELVES", "CHAOS", "HORDE"
-8750 REM player data
-8760 DATA 1, 1, 2, 3, 3, 3, 3, 4, 0, 0
-8770 DATA 8, 12, 0, 3, 3, 3, 3, 4, 0, 0
-8780 DATA 1, 12, 2, 3, 3, 3, 3, 4, 0, 0
-8790 DATA 8, 1, 0, 3, 3, 3, 3, 4, 0, 0
-8800 REM UDGs data
-8810 DATA 0, 3, 15, 31, 63, 63, 127, 127
-8820 DATA 0, 192, 240, 248, 252, 252, 254, 254 
-8830 DATA 127, 127, 63, 63, 31, 15, 3, 0 
-8840 DATA 254, 254, 252, 252, 248, 240, 192, 0
-8850 DATA 0, 0, 0, 0, 1, 7, 7, 15
-8860 DATA 0, 0, 0, 0, 128, 224, 224, 240 
-8870 DATA 15, 7, 7, 1, 0, 0, 0, 0
-8880 DATA 240, 224, 224, 128, 0, 0, 0, 0
-8900 DATA 0, 0, 0, 5, 15, 7, 15, 7
-8910 DATA 0, 0, 0, 160, 240, 224, 240, 224
-8920 DATA 7, 15, 7, 15, 5, 0, 0, 0 
-8930 DATA 224, 240, 224, 240, 160, 0, 0, 0 
-8940 DATA 0, 0, 0, 0, 80, 248, 240, 248 
-8950 DATA 248, 240, 248, 80, 0, 0, 0, 0 
-8960 DATA 0, 0, 0, 0, 10, 31, 15, 31 
-8970 DATA 31, 15, 31, 10, 0, 0, 0, 0 
-8980 DATA 0, 0, 0, 60, 60, 0, 0, 0 
-8990 DATA 0, 0, 24, 24, 24, 24, 0, 0 
-9000 DATA 0, 0, 0, 0, 24, 0, 0, 0
+8000 REM resolve AI movement
+8010 LET d(p, 9) = 0
+8020 FOR q = 1 TO t STEP 1
+8030 IF q = p OR d(q, 1) < 1 OR d(p, 9) > 0 THEN GO TO 8100
+8040 IF d(p, 3) = 0 THEN LET tx = d(q, 1) - d(p, 1) : LET ty = d(q, 2) - d(p, 2) : GO TO 8080
+8050 IF d(p, 3) = 1 THEN LET tx = d(p, 2) - d(q, 2) : LET ty = d(q, 1) - d(p, 1) : GO TO 8080
+8060 IF d(p, 3) = 2 THEN LET tx = d(p, 1) - d(q, 1) : LET ty = d(p, 2) - d(q, 2) : GO TO 8080
+8070 LET tx = d(q, 2) - d(p, 2) : LET ty = d(p, 1) - d(q, 1)
+8080 LET tx = tx + 4 : LET ty = ty + 3
+8090 IF tx > 0 AND tx < 7 AND ty > 0 AND ty < 6 THEN LET d(p, 9) = v(tx, ty)
+8100 NEXT q
+8110 IF d(p, 9) <> 0 THEN RETURN
+8120 IF ty > -11 AND ty < 0 THEN LET d(p, 9) = 1 : RETURN
+8130 IF tx > 5 AND tx < 16 THEN LET d(p, 9) = 5 : RETURN
+8140 LET d(p, 9) = 3
+8150 RETURN
+8500 REM resolve AI attack
+8510 LET d(p, 10) = 0
+8520 FOR q = 1 TO t STEP 1
+8530 IF q = p OR d(q, 1) < 1 OR d(p, 10) > 0 THEN GO TO 8600
+8540 IF d(p, 3) = 0 THEN LET tx = d(q, 1) - d(p, 1) : LET ty = d(q, 2) - d(p, 2) : GO TO 8580
+8550 IF d(p, 3) = 1 THEN LET tx = d(p, 2) - d(q, 2) : LET ty = d(q, 1) - d(p, 1) : GO TO 8580
+8560 IF d(p, 3) = 2 THEN LET tx = d(p, 1) - d(q, 1) : LET ty = d(p, 2) - d(q, 2) : GO TO 8580
+8570 LET tx = d(q, 2) - d(p, 2) : LET ty = d(p, 1) - d(q, 1)
+8580 LET tx = tx + 4 : LET ty = ty + 3
+8590 IF tx > 0 AND tx < 7 AND ty > 0 AND ty < 6 THEN LET d(p, 10) = b(tx, ty)
+8600 NEXT q
+8610 IF d(p, 10) = 0 THEN LET d(p, 10) = 19
+8620 RETURN
+9000 REM attack vectors data
+9010 DATA -3, -2, 4, -3, -1, 4, -3, 0, 4
+9020 DATA -3, 1, 4, -3, 2, 4, -2, -2, 1
+9030 DATA -2, -1, 2, -2, 0, 2, -2, 1, 2
+9040 DATA -2, 2, 1, -1, -2, 1, -1, -1, 3
+9050 DATA -1, 0, 1, -1, 1, 3, -1, 2, 1
+9060 DATA 0, -2, 1, 0, -1, 3, 0, 0, 0
+9070 DATA 0, 1, 3, 0, 2, 1, 1, -2, 1
+9080 DATA 1, -1, 3, 1, 0, 0, 1, 1, 3
+9090 DATA 1, 2, 1, 2, -2, 1, 2, -1, 0
+9100 DATA 2, 0, 0, 2, 1, 0, 2, 2, 1
+9110 REM movement vectors data
+9120 DATA -2, -1, -1, -2, -1, 0, -2, 0, 0
+9130 DATA -2, 1, 0, -2, 1, 1, -1, -1, -1
+9140 DATA -1, -1, 0, -1, 0, 0, -1, 1, 0
+9150 DATA -1, 1, 1, 0, 0, 0, 0, 0, -1
+9160 DATA 0, 0, 0, 0, 0, 1, 0, 0, 0
+9170 REM player UIs data
+9180 DATA 1, 5, 1, 1, 0, 0
+9190 DATA 2, 4, 5, 9, 3, 3
+9200 DATA 3, 2, 1, 9, 0, 3
+9210 DATA 6, 3, 5, 1, 3, 0
+9220 REM player names data
+9230 DATA "FLEET", "ELVES", "CHAOS", "HORDE"
+9240 REM player data
+9250 DATA 1, 1, 2, 3, 3, 3, 3, 4, 0, 0
+9260 DATA 8, 12, 0, 3, 3, 3, 3, 4, 0, 0
+9270 DATA 1, 12, 2, 3, 3, 3, 3, 4, 0, 0
+9280 DATA 8, 1, 0, 3, 3, 3, 3, 4, 0, 0
+9290 REM UDGs data
+9300 DATA 0, 3, 15, 31, 63, 63, 127, 127
+9310 DATA 0, 192, 240, 248, 252, 252, 254, 254 
+9320 DATA 127, 127, 63, 63, 31, 15, 3, 0 
+9330 DATA 254, 254, 252, 252, 248, 240, 192, 0
+9340 DATA 0, 0, 0, 0, 1, 7, 7, 15
+9350 DATA 0, 0, 0, 0, 128, 224, 224, 240 
+9360 DATA 15, 7, 7, 1, 0, 0, 0, 0
+9370 DATA 240, 224, 224, 128, 0, 0, 0, 0
+9380 DATA 0, 0, 0, 5, 15, 7, 15, 7
+9390 DATA 0, 0, 0, 160, 240, 224, 240, 224
+9400 DATA 7, 15, 7, 15, 5, 0, 0, 0 
+9410 DATA 224, 240, 224, 240, 160, 0, 0, 0 
+9420 DATA 0, 0, 0, 0, 80, 248, 240, 248 
+9430 DATA 248, 240, 248, 80, 0, 0, 0, 0 
+9440 DATA 0, 0, 0, 0, 10, 31, 15, 31 
+9450 DATA 31, 15, 31, 10, 0, 0, 0, 0 
+9460 DATA 0, 0, 0, 60, 60, 0, 0, 0 
+9470 DATA 0, 0, 24, 24, 24, 24, 0, 0 
+9480 DATA 0, 0, 0, 0, 24, 0, 0, 0
+9490 REM movement ai behaviour data
+9500 DATA 1, 2, 3, 4, 5
+9510 DATA 6, 7, 8, 9, 10
+9520 DATA 12, 12, 13, 14, 14
+9530 DATA 12, 12, 13, 14, 14
+9540 DATA 12, 12, 13, 14, 14
+9550 DATA 12, 12, 13, 14, 14
+9560 REM attack ai behaviour data
+9570 DATA 1, 2, 3, 4, 5
+9580 DATA 6, 7, 8, 9, 10
+9590 DATA 11, 12, 13, 14, 15
+9600 DATA 16, 17, 0, 19, 20
+9610 DATA 21, 22, 0, 24, 25
+9620 DATA 26, 0, 0, 0, 30

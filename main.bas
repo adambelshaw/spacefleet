@@ -80,7 +80,7 @@
 1070 IF d(p, 1) = 0 THEN GO TO 1140 : REM dead
 1080 IF p > (t - u) THEN GO SUB 8000 : GO TO 1140 : REM AI
 1090 LET k$ = ""
-1100 GO SUB 5200
+1100 GO SUB 5000 : GO SUB 5850
 1110 GO SUB 4200
 1120 GO SUB 4000
 1130 IF k$ <> "Y" THEN GO TO 1090
@@ -97,7 +97,7 @@
 1240 IF d(p, 1) < 1 THEN GO TO 1310 : REM dead
 1250 IF p > (t - u) THEN GO SUB 8500 : GO TO 1310 : REM AI
 1260 LET k$ = ""
-1270 GO SUB 5200
+1270 GO SUB 5000 : GO SUB 5850
 1280 GO SUB 4500
 1290 GO SUB 4000
 1300 IF k$ <> "Y" THEN GO TO 1270
@@ -106,7 +106,7 @@
 1330 REM apply combat
 1340 FOR p = 1 TO t STEP 1
 1350 REM if ship on map
-1360 IF d(p, 1) > 0 THEN GO SUB 5200 : GO SUB 6500
+1360 IF d(p, 1) > 0 THEN GO SUB 5000 : GO SUB 5850 : GO SUB 6500
 1370 NEXT p    
 1380 REM move killed ships off map
 1390 FOR p = 1 TO t STEP 1
@@ -120,7 +120,6 @@
 3000 REM initialise game
 3010 LET p = 1
 3020 LET t = 0
-3030 GO SUB 5200
 3040 GO SUB 5000
 3050 PRINT AT 17, 11; INK 5; "<SPACE FLEET>";
 3060 PRINT AT 19, 11; "Enter players 2-4? "; FLASH 1; CHR$(143);
@@ -226,11 +225,11 @@
 5040 PRINT AT 3, 0; "A"; PAPER 2; "     "; INK 2; PAPER 0; "4";
 5050 PRINT AT 4, 0; "B"; PAPER 6; " "; PAPER 2; "   "; PAPER 6; " "; INK 2; PAPER 0; "2";
 5060 PRINT AT 5, 0; "C"; PAPER 6; "  "; PAPER 2; " "; PAPER 6; "  "; INK 2; PAPER 0; "1";
-5070 PRINT AT 6, 0; "D"; PAPER 6; "  "; INK 1; PAPER 0; CHR$(161); PAPER 6; "  ";
+5070 PRINT AT 6, 0; "D"; PAPER 6; "  "; AT 6, 4; PAPER 6; "  ";
 5080 PRINT AT 7, 0; "E"; PAPER 6; "  "; PAPER 0; " "; PAPER 6; "  ";
 5090 PRINT AT 8, 0; "F"; PAPER 6; " "; PAPER 0; "   "; PAPER 6; " ";
 5100 PRINT AT 9, 4; INK 6; "31";
-5110 PRINT AT 16, 0; INK 5; "Helm"; INK 1; CHR$(140); INK 5; "Computer";
+5110 PRINT AT 16, 0; INK 5; "Helm"; AT 16, 5; "Computer";
 5120 PRINT AT 17, 0; "A"; PAPER 0; CHR$(160); CHR$(162); INK 0; PAPER 4; CHR$(161); CHR$(162); INK 4; PAPER 0; CHR$(161); INK 0; PAPER 4; CHR$(162); CHR$(161); INK 4; PAPER 0; CHR$(162); CHR$(160);
 5130 PRINT AT 18, 1; " "; CHR$(162); INK 0; PAPER 4; " "; CHR$(162); INK 4; PAPER 0; CHR$(162); INK 0; PAPER 4; CHR$(162); " "; INK 4; PAPER 0; CHR$(162); " ";
 5140 PRINT AT 19, 1; " "; CHR$(161); INK 0; PAPER 4; " "; CHR$(161); INK 4; PAPER 0; CHR$(161); INK 0; PAPER 4; CHR$(161); " "; INK 4; PAPER 0; CHR$(161); " ";
@@ -238,7 +237,6 @@
 5160 PRINT AT 21, 1; INK 0; PAPER 4; " "; CHR$(161); INK 4; PAPER 0; " "; CHR$(161); INK 0; PAPER 4; CHR$(161); INK 4; PAPER 0; CHR$(161); " "; INK 0; PAPER 4; CHR$(161); " ";
 5170 PRINT #1; AT 0, 0; INK 4; "C   "; INK 0; PAPER 4; CHR$(160); INK 4; PAPER 0; CHR$(161); INK 0; PAPER 4; CHR$(160); INK 4; PAPER 0; "   ";
 5180 PRINT #1; AT 1, 2; INK 4; "1 234 5 ";
-5190 RETURN
 5200 REM draw player controls and clear console
 5210 INK u(p, 1)
 5220 PRINT AT 0, 6; CHR$(133); CHR$(161);
@@ -287,6 +285,17 @@
 5820 LET ty = ((d(q, 2) - 1) * 2) + 8
 5830 PRINT AT tx, ty; INK 6; PAPER 2; FLASH 1; CHR$(139); CHR$(135); AT tx + 1, ty; CHR$(142); CHR$(141);
 5840 RETURN
+5850 REM overlay players position
+5860 FOR q = 1 TO t STEP 1
+5870 IF q = p OR d(q, 1) < 1 THEN GO TO 5940
+5880 IF d(p, 3) = 0 THEN LET tx = d(q, 1) - d(p, 1) : LET ty = d(q, 2) - d(p, 2) : GO TO 5920
+5890 IF d(p, 3) = 1 THEN LET tx = d(p, 2) - d(q, 2) : LET ty = d(q, 1) - d(p, 1) : GO TO 5920
+5900 IF d(p, 3) = 2 THEN LET tx = d(p, 1) - d(q, 1) : LET ty = d(p, 2) - d(q, 2) : GO TO 5920
+5910 LET tx = d(q, 2) - d(p, 2) : LET ty = d(p, 1) - d(q, 1)
+5920 LET tx = tx + 4 : LET ty = ty + 3
+5930 IF tx > 0 AND tx < 7 AND ty > 0 AND ty < 6 THEN PRINT AT tx + 2, ty; CHR$(162);
+5950 NEXT q
+5960 RETURN
 6000 REM player move
 6010 IF d(p, 3) = 0 THEN LET x = d(p, 1) + m(d(p, 9), 1) : LET y = d(p, 2) + m(d(p, 9), 2) : GO TO 6050
 6020 IF d(p, 3) = 1 THEN LET x = d(p, 1) + m(d(p, 9), 2) : LET y = d(p, 2) - m(d(p, 9), 1) : GO TO 6050
@@ -373,7 +382,7 @@
 7590 LET t = 0
 7600 REM 1st player or winner colours
 7610 LET p = q
-7620 GO SUB 5200
+7620 GO SUB 5000
 7630 PRINT AT 17, 11; INK 2; "<GAME OVER>";
 7640 IF i = 0 THEN PRINT AT 18, 11; "Everybody is dead."; : GO TO 7660
 7650 PRINT AT 18, 11; INK u(p, 1); "SPACE "; n$(p); INK 4; " have won.";
@@ -382,7 +391,7 @@
 8000 REM resolve AI movement
 8010 LET d(p, 9) = 0
 8020 FOR q = 1 TO t STEP 1
-8030 IF q = p OR d(q, 1) < 1 OR d(p, 9) > 0 THEN GO TO 8090
+8030 IF q = p OR d(q, 1) < 1 OR d(p, 9) > 0 THEN GO TO 8100
 8040 IF d(p, 3) = 0 THEN LET tx = d(q, 1) - d(p, 1) : LET ty = d(q, 2) - d(p, 2) : GO TO 8080
 8050 IF d(p, 3) = 1 THEN LET tx = d(p, 2) - d(q, 2) : LET ty = d(q, 1) - d(p, 1) : GO TO 8080
 8060 IF d(p, 3) = 2 THEN LET tx = d(p, 1) - d(q, 1) : LET ty = d(p, 2) - d(q, 2) : GO TO 8080
@@ -398,7 +407,7 @@
 8500 REM resolve AI attack
 8510 LET d(p, 10) = 0
 8520 FOR q = 1 TO t STEP 1
-8530 IF q = p OR d(q, 1) < 1 OR d(p, 10) > 0 THEN GO TO 8590
+8530 IF q = p OR d(q, 1) < 1 OR d(p, 10) > 0 THEN GO TO 8600
 8540 IF d(p, 3) = 0 THEN LET tx = d(q, 1) - d(p, 1) : LET ty = d(q, 2) - d(p, 2) : GO TO 8580
 8550 IF d(p, 3) = 1 THEN LET tx = d(p, 2) - d(q, 2) : LET ty = d(q, 1) - d(p, 1) : GO TO 8580
 8560 IF d(p, 3) = 2 THEN LET tx = d(p, 1) - d(q, 1) : LET ty = d(p, 2) - d(q, 2) : GO TO 8580

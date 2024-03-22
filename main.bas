@@ -80,11 +80,7 @@
 1070 IF d(p, 1) = 0 THEN GO TO 1140 : REM dead
 1080 IF p > (t - u) THEN GO SUB 8000 : GO TO 1140 : REM AI
 1090 LET k$ = ""
-<<<<<<< HEAD
-1100 GO SUB 5200
-=======
 1100 GO SUB 5000 : GO SUB 5850
->>>>>>> develop
 1110 GO SUB 4200
 1120 GO SUB 4000
 1130 IF k$ <> "Y" THEN GO TO 1090
@@ -101,11 +97,7 @@
 1240 IF d(p, 1) < 1 THEN GO TO 1310 : REM dead
 1250 IF p > (t - u) THEN GO SUB 8500 : GO TO 1310 : REM AI
 1260 LET k$ = ""
-<<<<<<< HEAD
-1270 GO SUB 5200
-=======
 1270 GO SUB 5000 : GO SUB 5850
->>>>>>> develop
 1280 GO SUB 4500
 1290 GO SUB 4000
 1300 IF k$ <> "Y" THEN GO TO 1270
@@ -114,11 +106,7 @@
 1330 REM apply combat
 1340 FOR p = 1 TO t STEP 1
 1350 REM if ship on map
-<<<<<<< HEAD
-1360 IF d(p, 1) > 0 THEN GO SUB 5200 : GO SUB 6500
-=======
 1360 IF d(p, 1) > 0 THEN GO SUB 5000 : GO SUB 5850 : GO SUB 6500
->>>>>>> develop
 1370 NEXT p    
 1380 REM move killed ships off map
 1390 FOR p = 1 TO t STEP 1
